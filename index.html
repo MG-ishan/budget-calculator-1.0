@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Monthly Income & Expenses Inventory</title>
+  <link rel="stylesheet" href="styles.css">
+  <!-- Chart.js CDN with fallback script in app.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+
+  <!-- Top Navigation / Header -->
+  <header class="app-header">
+    <div class="header-container">
+
+      <div class="header-actions">
+        <!-- Month Navigation -->
+        <div class="month-nav">
+          <button id="prevMonthBtn" class="btn btn-icon" title="Previous Month">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"></polyline></svg>
+          </button>
+          <input type="month" id="monthPicker" class="form-control month-input">
+          <button id="nextMonthBtn" class="btn btn-icon" title="Next Month">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
+          </button>
+          <button id="allTimeBtn" class="btn btn-secondary btn-sm">All Time</button>
+        </div>
+
+        <div class="date-range-filter" aria-label="Date range filter">
+          <label class="range-label">
+            <span>From</span>
+            <input type="date" id="dateRangeStart" class="form-control date-input" aria-label="Start date">
+          </label>
+          <label class="range-label">
+            <span>To</span>
+            <input type="date" id="dateRangeEnd" class="form-control date-input" aria-label="End date">
+          </label>
+          <button id="clearDateRangeBtn" class="btn btn-secondary btn-sm">Clear</button>
+        </div>
+
+        <div class="action-buttons">
+          <button id="addTransactionBtn" class="btn btn-primary">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+            Add Transaction
+          </button>
+          
+          <button id="budgetLimitsBtn" class="btn btn-secondary">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20v-6M6 20V10M18 20V4"></path></svg>
+            Budgets
+          </button>
+
+          <button id="categorySettingsBtn" class="btn btn-secondary" title="Manage Categories">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line></svg>
+            Categories
+          </button>
+
+          <button id="bankAccountsBtn" class="btn btn-secondary" title="Manage Bank Accounts">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 10h18M5 10V7a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v3M4 10v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"></path></svg>
+            Accounts
+          </button>
+
+          <div class="dropdown">
+            <button class="btn btn-secondary dropdown-toggle" id="moreActionsBtn">
+              Data ▾
+            </button>
+            <div class="dropdown-menu" id="dataDropdownMenu">
+              <button id="exportCsvBtn" class="dropdown-item">Export CSV</button>
+              <button id="exportJsonBtn" class="dropdown-item">Export JSON Backup</button>
+              <label class="dropdown-item file-label">
+                Import JSON Backup
+                <input type="file" id="importJsonInput" accept=".json" style="display:none;">
+              </label>
+              <div class="dropdown-divider"></div>
+              <button id="loadSampleBtn" class="dropdown-item">Load Sample Data</button>
+              <button id="clearDataBtn" class="dropdown-item text-danger">Clear All Data</button>
+            </div>
+          </div>
+
+          <button id="themeToggleBtn" class="btn btn-icon" title="Toggle Light/Dark Theme">
+            <svg class="sun-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+            <svg class="moon-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="main-container">
+
+    <!-- KPI Summary Cards -->
+    <section class="kpi-summary">
+      <div class="kpi-bank-wrapper">
+        <div class="kpi-card income-card">
+          <div class="kpi-header">
+            <span class="kpi-title">Accounts</span>
+            <div class="kpi-icon income-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline><polyline points="17 6 23 6 23 12"></polyline></svg>
+            </div>
+          </div>
+          <div class="kpi-value" id="kpiIncome">$0.00</div>
+          <div class="kpi-subtext" id="kpiIncomeSub">No bank accounts added</div>
+        </div>
+      </div>
+
+      <div class="kpi-group">
+        <div class="kpi-card expense-card">
+          <div class="kpi-header">
+            <span class="kpi-title">Total Expenses</span>
+            <div class="kpi-icon expense-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 18 13.5 8.5 8.5 13.5 1 6"></polyline><polyline points="17 18 23 18 23 12"></polyline></svg>
+            </div>
+          </div>
+          <div class="kpi-value" id="kpiExpense">$0.00</div>
+          <div class="kpi-subtext" id="kpiExpenseSub">0 transactions</div>
+        </div>
+
+        <div class="kpi-card balance-card">
+          <div class="kpi-header">
+            <span class="kpi-title">Total Savings & Assets</span>
+            <div class="kpi-icon balance-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"></rect><line x1="2" y1="10" x2="22" y2="10"></line></svg>
+            </div>
+          </div>
+          <div class="kpi-chart-wrap bullet-chart-wrap">
+            <div id="assetBreakdownChart" class="bullet-chart"></div>
+          </div>
+          <div class="kpi-value" id="kpiBalance" style="display:none;">0.00</div>
+          <div class="kpi-badge" id="kpiBalanceBadge">Assets Summary</div>
+        </div>
+
+        <div class="kpi-card savings-card">
+          <div class="kpi-header">
+            <span class="kpi-title">Savings Rate</span>
+            <div class="kpi-icon savings-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+            </div>
+          </div>
+          <div class="kpi-value" id="kpiSavingsRate">0.0%</div>
+          <div class="progress-bar-container">
+            <div class="progress-bar-fill" id="savingsRateFill" style="width: 0%"></div>
+          </div>
+        </div>
+
+        <div class="card inventory-card inventory-card-compact">
+          <div class="table-toolbar">
+            <div class="search-box">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+              <input type="text" id="searchInput" class="form-control" placeholder="Search by title, category, note...">
+            </div>
+
+            <div class="filters-group">
+              <select id="typeFilter" class="form-control">
+                <option value="all">All Types</option>
+                <option value="income">Income Only</option>
+                <option value="expense">Expense Only</option>
+              </select>
+
+              <select id="categoryFilter" class="form-control">
+                <option value="all">All Categories</option>
+                <!-- Categories populated by JS -->
+              </select>
+            </div>
+          </div>
+
+          <div class="table-responsive">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th data-sort="date" class="sortable">Date <span class="sort-icon">↓</span></th>
+                  <th data-sort="title" class="sortable">Title</th>
+                  <th>Category</th>
+                  <th>Method</th>
+                  <th data-sort="type" class="sortable">Type</th>
+                  <th data-sort="amount" class="sortable text-right">Amount</th>
+                  <th class="text-center">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="transactionsTbody">
+                <!-- Transaction rows inserted dynamically -->
+              </tbody>
+            </table>
+            
+            <div id="tableEmptyState" class="empty-state">
+              <div class="empty-icon">💸</div>
+              <h4>No inventory entries found</h4>
+              <p>Add a new income or expense transaction to start tracking your inventory.</p>
+              <button id="emptyAddBtn" class="btn btn-primary btn-sm">+ Add First Entry</button>
+            </div>
+          </div>
+
+          <div class="table-footer">
+            <span id="recordCount">Showing 0 entries</span>
+            <span id="filteredTotals">Total: $0.00</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Dashboard Content Layout (Grid) -->
+    <div class="dashboard-grid">
+      
+      <!-- Left Column: Visual Charts & Budget Progress -->
+      <aside class="dashboard-sidebar">
+        
+        <!-- Category Expense Breakdown Chart -->
+        <div class="card chart-card">
+          <div class="card-header">
+            <h3>Expense Breakdown</h3>
+            <span class="badge" id="expenseCatCount">0 Categories</span>
+          </div>
+          <div class="chart-wrapper">
+            <canvas id="categoryChart"></canvas>
+            <div id="chartEmptyState" class="empty-chart">No expense records for selected period</div>
+          </div>
+        </div>
+
+        <!-- Category Budget Limits Progress -->
+        <div class="card budget-card">
+          <div class="card-header">
+            <h3>Category Budgets</h3>
+            <button id="manageBudgetsLink" class="btn-link">Edit Limits</button>
+          </div>
+          <div id="budgetProgressList" class="budget-progress-list">
+            <!-- Dynamic budget progress bars inserted via JS -->
+          </div>
+        </div>
+
+      </aside>
+
+    </div>
+  </main>
+
+  <!-- Transaction Modal (Add / Edit) -->
+  <dialog id="transactionModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="modalTitle">Add New Transaction</h3>
+        <button id="closeTransactionModalBtn" class="btn-close">&times;</button>
+      </div>
+      <form id="transactionForm">
+        <input type="hidden" id="txId">
+
+        <div class="form-row">
+          <div class="form-group flex-1">
+            <label>Transaction Type *</label>
+            <div class="type-toggle-group">
+              <label class="type-radio income-radio">
+                <input type="radio" name="txType" value="income">
+                <span>+ Income</span>
+              </label>
+              <label class="type-radio expense-radio">
+                <input type="radio" name="txType" value="expense" checked>
+                <span>- Expense</span>
+              </label>
+            </div>
+          </div>
+
+          <div class="form-group flex-1">
+            <label for="txAmount">Amount ($) *</label>
+            <input type="number" id="txAmount" class="form-control" step="0.01" min="0.01" required placeholder="0.00">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="txTitle">Title / Description *</label>
+          <input type="text" id="txTitle" class="form-control" required placeholder="e.g. Monthly Salary, Grocery Store, Electricity Bill">
+        </div>
+
+        <div class="form-row">
+          <div class="form-group flex-1">
+            <label for="txCategory">Category *</label>
+            <select id="txCategory" class="form-control" required>
+              <!-- Populated by JS -->
+            </select>
+          </div>
+
+          <div class="form-group flex-1">
+            <label for="txDate">Date &amp; Time *</label>
+            <input type="datetime-local" id="txDate" class="form-control" required>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group flex-1">
+            <label for="txMethod">Payment Method</label>
+            <select id="txMethod" class="form-control">
+              <option value="Cash">Cashbb</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+
+          <div class="form-group flex-1">
+            <label for="txFrequency">Frequency</label>
+            <select id="txFrequency" class="form-control">
+              <option value="One-time">One-time</option>
+              <option value="Monthly">Monthly Recurring</option>
+              <option value="Yearly">Yearly Recurring</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-row transfer-row" id="transferRow" style="display:none;">
+          <div class="form-group flex-1">
+            <label for="txTransferFrom">From Account</label>
+            <select id="txTransferFrom" class="form-control"></select>
+          </div>
+
+          <div class="form-group flex-1">
+            <label for="txTransferTo">To Account</label>
+            <select id="txTransferTo" class="form-control"></select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="txNotes">Notes (Optional)</label>
+          <textarea id="txNotes" class="form-control" rows="2" placeholder="Add invoice number, vendor details, or extra info..."></textarea>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" id="cancelTxBtn" class="btn btn-secondary">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="saveTxBtn">Save Entry</button>
+        </div>
+      </form>
+    </div>
+  </dialog>
+
+  <!-- Budget Limits Modal -->
+  <dialog id="budgetModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Category Budget Targets</h3>
+        <button id="closeBudgetModalBtn" class="btn-close">&times;</button>
+      </div>
+      <p class="modal-description">Set a total monthly spending limit and individual category caps so the combined category limits stay within the overall budget.</p>
+      
+      <form id="budgetForm">
+        <div class="form-group">
+          <label for="totalSpendingLimit">Total Spending Limit</label>
+          <input type="number" id="totalSpendingLimit" class="form-control" step="0.01" min="0" placeholder="0.00">
+          <div id="budgetLimitStatus" class="budget-limit-status" aria-live="polite">Enter a total limit to see the remaining available budget.</div>
+        </div>
+
+        <div id="budgetCategoryInputs" class="budget-inputs-list">
+          <!-- Dynamically populated budget inputs for each category -->
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" id="cancelBudgetBtn" class="btn btn-secondary">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save Budget Limits</button>
+        </div>
+      </form>
+    </div>
+  </dialog>
+
+  <!-- Category Management Settings Modal -->
+  <dialog id="categoryModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Manage Categories</h3>
+        <button id="closeCategoryModalBtn" class="btn-close">&times;</button>
+      </div>
+      <p class="modal-description">Create, modify, or delete income and expense categories.</p>
+      
+      <!-- Category Tabs -->
+      <div class="category-tabs">
+        <button type="button" id="catTabExpense" class="tab-btn active" data-type="expense">Expense Categories</button>
+        <button type="button" id="catTabIncome" class="tab-btn" data-type="income">Income Categories</button>
+      </div>
+
+      <!-- Add New Category Form -->
+      <form id="addCategoryForm" class="add-cat-form">
+        <div class="form-row">
+          <select id="newCatIcon" class="form-control cat-icon-select" title="Choose Category Icon">
+            <option value="🏷️">🏷️ Default</option>
+            <option value="💰">💰 Money</option>
+            <option value="💻">💻 Work / Tech</option>
+            <option value="📈">📈 Investment</option>
+            <option value="💼">💼 Business</option>
+            <option value="🎁">🎁 Gift</option>
+            <option value="💵">💵 Cash</option>
+            <option value="🏠">🏠 Rent / Housing</option>
+            <option value="⚡">⚡ Utilities</option>
+            <option value="🛒">🛒 Groceries</option>
+            <option value="🚗">🚗 Transport</option>
+            <option value="🍽️">🍽️ Dining</option>
+            <option value="🎬">🎬 Entertainment</option>
+            <option value="🏥">🏥 Healthcare</option>
+            <option value="📱">📱 Subscriptions</option>
+            <option value="🛍️">🛍️ Shopping</option>
+            <option value="✈️">✈️ Travel</option>
+            <option value="🎓">🎓 Education</option>
+            <option value="💳">💳 Finance</option>
+            <option value="🏋️">🏋️ Fitness</option>
+            <option value="🐾">🐾 Pets</option>
+            <option value="☕">☕ Coffee</option>
+            <option value="📦">📦 Misc / Other</option>
+          </select>
+          <input type="text" id="newCatName" class="form-control flex-1" placeholder="Enter new category name..." required>
+          <button type="submit" class="btn btn-primary btn-sm">+ Add Category</button>
+        </div>
+      </form>
+
+      <!-- Category Items List -->
+      <div id="categoryItemsList" class="category-items-list">
+        <!-- Rendered dynamically via JS -->
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" id="closeCategoryModalFooterBtn" class="btn btn-secondary">Done</button>
+      </div>
+    </div>
+  </dialog>
+
+  <!-- Bank Accounts Modal -->
+  <dialog id="bankAccountModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Bank Accounts & Cards</h3>
+        <button id="closeBankAccountModalBtn" class="btn-close">&times;</button>
+      </div>
+      <p class="modal-description">Track your active bank accounts, fixed deposits, and web cards for transaction payment selection.</p>
+
+      <form id="bankAccountForm" class="bank-account-form">
+        <input type="hidden" id="bankAccountId">
+        <div class="form-row">
+          <div class="form-group flex-1">
+            <label for="bankAccountType">Type</label>
+            <select id="bankAccountType" class="form-control">
+              <option value="cash">Physical Cash</option>
+              <option value="bank">Bank Account</option>
+              <option value="fixed_deposit">Fixed Deposit</option>
+              <option value="web_card">Web Card</option>
+            </select>
+          </div>
+          <div class="form-group flex-1">
+            <label for="bankAccountName">Nickname</label>
+            <input type="text" id="bankAccountName" class="form-control" placeholder="e.g. Primary Checking" required>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group flex-1">
+            <label for="bankAccountInstitution">Institution / Provider</label>
+            <input type="text" id="bankAccountInstitution" class="form-control" placeholder="e.g. Chase, HDFC, Visa">
+          </div>
+          <div class="form-group flex-1">
+            <label for="bankAccountHolder">Account Holder</label>
+            <input type="text" id="bankAccountHolder" class="form-control" placeholder="e.g. John Smith">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group flex-1">
+            <label for="bankAccountNumber">Last 4 / Reference</label>
+            <input type="text" id="bankAccountNumber" class="form-control" placeholder="e.g. 9831 or 1234\n">
+          </div>
+          <div class="form-group flex-1">
+            <label for="bankAccountBalance">Current Balance</label>
+            <input type="number" id="bankAccountBalance" class="form-control" step="0.01" min="0" placeholder="0.00">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group flex-1">
+            <label for="bankAccountMaxSpend">Max Spending Limit</label>
+            <input type="number" id="bankAccountMaxSpend" class="form-control" step="0.01" min="0" placeholder="0.00">
+          </div>
+          <div class="form-group flex-1">
+            <label class="checkbox-inline">
+              <input type="checkbox" id="bankAccountDefault">
+              <span>Set as default account</span>
+            </label>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="bankAccountNotes">Notes</label>
+          <textarea id="bankAccountNotes" class="form-control" rows="2" placeholder="Optional notes, interest rate, rewards, due date..."></textarea>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" id="cancelBankAccountBtn" class="btn btn-secondary">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save Account</button>
+        </div>
+      </form>
+
+      <div id="bankAccountList" class="bank-account-list"></div>
+    </div>
+  </dialog>
+
+  <div id="saveToast" class="save-toast" role="status" aria-live="polite">Saved</div>
+
+  <script src="app.js"></script>
+</body>
+</html>
