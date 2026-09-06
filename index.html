@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<!-- v3 -->
 <html lang="en" data-theme="light">
 <head>
   <meta charset="UTF-8">
@@ -10,8 +11,13 @@
 </head>
 <body>
 
+  <div id="pageLoader" class="page-loader" role="status" aria-live="polite">
+    <div class="loader-ring" aria-hidden="true"></div>
+    <span>Loading dashboard</span>
+  </div>
+
   <!-- Top Navigation / Header -->
-  <header class="app-header">
+  <header class="app-header navigation-bar">
     <div class="header-container">
 
       <div class="header-actions">
@@ -67,6 +73,7 @@
             <div class="dropdown-menu" id="dataDropdownMenu">
               <button id="exportCsvBtn" class="dropdown-item">Export CSV</button>
               <button id="exportJsonBtn" class="dropdown-item">Export JSON Backup</button>
+              <button id="saveGoogleDriveBtn" class="dropdown-item">Save to Google Drive</button>
               <label class="dropdown-item file-label">
                 Import JSON Backup
                 <input type="file" id="importJsonInput" accept=".json" style="display:none;">
@@ -88,10 +95,10 @@
 
   <!-- Main Container -->
   <main class="main-container">
+    <div class="dashboard-layout">
 
-    <!-- KPI Summary Cards -->
-    <section class="kpi-summary">
-      <div class="kpi-bank-wrapper">
+      <!-- Side Panel -->
+      <aside class="side-panel">
         <div class="kpi-card income-card">
           <div class="kpi-header">
             <span class="kpi-title">Accounts</span>
@@ -102,9 +109,32 @@
           <div class="kpi-value" id="kpiIncome">$0.00</div>
           <div class="kpi-subtext" id="kpiIncomeSub">No bank accounts added</div>
         </div>
-      </div>
 
-      <div class="kpi-group">
+        <div class="card chart-card">
+          <div class="card-header">
+            <h3>Expense Breakdown</h3>
+            <span class="badge" id="expenseCatCount">0 Categories</span>
+          </div>
+          <div class="chart-wrapper">
+            <canvas id="categoryChart"></canvas>
+            <div id="chartEmptyState" class="empty-chart">No expense records for selected period</div>
+          </div>
+        </div>
+
+        <div class="card budget-card">
+          <div class="card-header">
+            <h3>Category Budgets</h3>
+            <button id="manageBudgetsLink" class="btn-link">Edit Limits</button>
+          </div>
+          <div id="budgetProgressList" class="budget-progress-list">
+            <!-- Dynamic budget progress bars inserted via JS -->
+          </div>
+        </div>
+      </aside>
+
+      <div class="content-panel">
+        <!-- Main Panel -->
+        <section class="main-panel">
         <div class="kpi-card expense-card">
           <div class="kpi-header">
             <span class="kpi-title">Total Expenses</span>
@@ -118,7 +148,7 @@
 
         <div class="kpi-card balance-card">
           <div class="kpi-header">
-            <span class="kpi-title">Total Savings & Assets</span>
+            <span class="kpi-title">Total Savings &amp; Assets</span>
             <div class="kpi-icon balance-icon">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"></rect><line x1="2" y1="10" x2="22" y2="10"></line></svg>
             </div>
@@ -127,7 +157,6 @@
             <div id="assetBreakdownChart" class="bullet-chart"></div>
           </div>
           <div class="kpi-value" id="kpiBalance" style="display:none;">0.00</div>
-          <div class="kpi-badge" id="kpiBalanceBadge">Assets Summary</div>
         </div>
 
         <div class="kpi-card savings-card">
@@ -142,7 +171,10 @@
             <div class="progress-bar-fill" id="savingsRateFill" style="width: 0%"></div>
           </div>
         </div>
+        </section>
 
+        <!-- Data Panel -->
+        <section class="data-panel">
         <div class="card inventory-card inventory-card-compact">
           <div class="table-toolbar">
             <div class="search-box">
@@ -195,40 +227,8 @@
             <span id="filteredTotals">Total: $0.00</span>
           </div>
         </div>
+        </section>
       </div>
-    </section>
-
-    <!-- Dashboard Content Layout (Grid) -->
-    <div class="dashboard-grid">
-      
-      <!-- Left Column: Visual Charts & Budget Progress -->
-      <aside class="dashboard-sidebar">
-        
-        <!-- Category Expense Breakdown Chart -->
-        <div class="card chart-card">
-          <div class="card-header">
-            <h3>Expense Breakdown</h3>
-            <span class="badge" id="expenseCatCount">0 Categories</span>
-          </div>
-          <div class="chart-wrapper">
-            <canvas id="categoryChart"></canvas>
-            <div id="chartEmptyState" class="empty-chart">No expense records for selected period</div>
-          </div>
-        </div>
-
-        <!-- Category Budget Limits Progress -->
-        <div class="card budget-card">
-          <div class="card-header">
-            <h3>Category Budgets</h3>
-            <button id="manageBudgetsLink" class="btn-link">Edit Limits</button>
-          </div>
-          <div id="budgetProgressList" class="budget-progress-list">
-            <!-- Dynamic budget progress bars inserted via JS -->
-          </div>
-        </div>
-
-      </aside>
-
     </div>
   </main>
 
