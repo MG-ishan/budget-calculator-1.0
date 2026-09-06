@@ -1,5 +1,5 @@
 /* ==========================================================================
-   MONTHLY INCOME & EXPENSES INVENTORY - CORE JAVASCRIPT ENGINE v3
+   MONTHLY INCOME & EXPENSES INVENTORY - CORE JAVASCRIPT ENGINE
    ========================================================================== */
 
 (function () {
