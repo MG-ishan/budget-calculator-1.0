@@ -1,5 +1,5 @@
 /* ==========================================================================
-   MONTHLY INCOME & EXPENSES INVENTORY - CORE JAVASCRIPT ENGINE
+   MONTHLY INCOME & EXPENSES INVENTORY - CORE JAVASCRIPT ENGINE v3
    ========================================================================== */
 
 (function () {
@@ -113,6 +113,7 @@
     categories: JSON.parse(JSON.stringify(DEFAULT_CATEGORIES)),
     categoryIcons: { ...DEFAULT_CATEGORY_ICONS },
     budgetLimits: { ...DEFAULT_BUDGET_LIMITS },
+    totalSpendingLimit: 0,
     bankAccounts: JSON.parse(JSON.stringify(DEFAULT_BANK_ACCOUNTS)),
     selectedMonth: getCurrentYearMonth(),
     dateRangeStart: '',
@@ -145,7 +146,6 @@
   const kpiExpense = $('kpiExpense');
   const kpiExpenseSub = $('kpiExpenseSub');
   const kpiBalance = $('kpiBalance');
-  const kpiBalanceBadge = $('kpiBalanceBadge');
   const kpiSavingsRate = $('kpiSavingsRate');
   const savingsRateFill = $('savingsRateFill');
 
@@ -467,6 +467,7 @@
         categories: state.categories,
         categoryIcons: state.categoryIcons,
         budgetLimits: state.budgetLimits,
+        totalSpendingLimit: state.totalSpendingLimit,
         bankAccounts: state.bankAccounts,
         theme: state.theme
       }));
@@ -487,6 +488,7 @@
         state.categories = parsed.categories || JSON.parse(JSON.stringify(DEFAULT_CATEGORIES));
         state.categoryIcons = parsed.categoryIcons || { ...DEFAULT_CATEGORY_ICONS };
         state.budgetLimits = parsed.budgetLimits || { ...DEFAULT_BUDGET_LIMITS };
+        state.totalSpendingLimit = Number(parsed.totalSpendingLimit) || 0;
         state.bankAccounts = Array.isArray(parsed.bankAccounts)
           ? parsed.bankAccounts.filter(account => {
               if (!account || typeof account !== 'object') return false;
@@ -511,7 +513,7 @@
     state.categories = JSON.parse(JSON.stringify(DEFAULT_CATEGORIES));
     state.categoryIcons = { ...DEFAULT_CATEGORY_ICONS };
     state.budgetLimits = { ...DEFAULT_BUDGET_LIMITS };
-    state.bankAccounts = [];
+    state.bankAccounts = JSON.parse(JSON.stringify(DEFAULT_BANK_ACCOUNTS));
 
     state.transactions = [
       {
@@ -645,6 +647,7 @@
 
   // Dynamic Categories Dropdown Populator
   function populateCategoryDropdowns() {
+    const selectedCategory = state.categoryFilter;
     categoryFilter.innerHTML = '<option value="all">All Categories</option>';
     
     const allCategories = [
@@ -658,6 +661,10 @@
       opt.textContent = `${getCategoryIcon(cat)} ${cat}`;
       categoryFilter.appendChild(opt);
     });
+
+    categoryFilter.value = Array.from(categoryFilter.options).some(option => option.value === selectedCategory)
+      ? selectedCategory
+      : 'all';
 
     updateModalCategoryOptions();
   }
@@ -865,14 +872,6 @@
     kpiBalance.style.display = 'none';
 
     renderAssetSummaryChart(assetChartData);
-
-    if (summaryTotal >= 0) {
-      kpiBalanceBadge.textContent = 'Assets Summary';
-      kpiBalanceBadge.className = 'kpi-badge';
-    } else {
-      kpiBalanceBadge.textContent = 'Asset Check';
-      kpiBalanceBadge.className = 'kpi-badge deficit';
-    }
 
     kpiSavingsRate.textContent = `${boundedSavingsRate.toFixed(1)}%`;
     savingsRateFill.style.width = `${Math.max(0, Math.abs(boundedSavingsRate))}%`;
@@ -1545,21 +1544,57 @@
   }
 
   function exportJSON() {
-    const dataStr = 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify({
-      transactions: state.transactions,
-      categories: state.categories,
-      categoryIcons: state.categoryIcons,
-      budgetLimits: state.budgetLimits,
-      bankAccounts: state.bankAccounts,
-      exportDate: new Date().toISOString()
-    }, null, 2));
+    const dataStr = 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(getBackupData(), null, 2));
     
     const downloadAnchor = document.createElement('a');
     downloadAnchor.setAttribute('href', dataStr);
     downloadAnchor.setAttribute('download', `budget_inventory_backup_${getCurrentYearMonth()}.json`);
     document.body.appendChild(downloadAnchor);
     downloadAnchor.click();
-    downloadAnchor.removeChild();
+    document.body.removeChild(downloadAnchor);
+  }
+
+  function getBackupData() {
+    return {
+      transactions: state.transactions,
+      categories: state.categories,
+      categoryIcons: state.categoryIcons,
+      budgetLimits: state.budgetLimits,
+      totalSpendingLimit: state.totalSpendingLimit,
+      bankAccounts: state.bankAccounts,
+      exportDate: new Date().toISOString()
+    };
+  }
+
+  function saveToGoogleDrive() {
+    let endpoint = localStorage.getItem('budget_inventory_drive_endpoint') || '';
+    if (!endpoint) {
+      endpoint = prompt('Paste your Google Apps Script web-app URL:');
+      if (!endpoint) return;
+
+      try {
+        const endpointUrl = new URL(endpoint);
+        if (!['http:', 'https:'].includes(endpointUrl.protocol)) {
+          throw new Error('Invalid protocol');
+        }
+      } catch (error) {
+        alert('Please enter a valid Google Apps Script web-app URL.');
+        return;
+      }
+
+      localStorage.setItem('budget_inventory_drive_endpoint', endpoint);
+    }
+
+    fetch(endpoint, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify(getBackupData())
+    })
+      .then(response => {
+        if (!response.ok) throw new Error('Drive request failed');
+        showSaveAnimation('Saved to Google Drive', 'success');
+      })
+      .catch(() => showSaveAnimation('Google Drive save failed', 'danger'));
   }
 
   function importJSON(file) {
@@ -1578,6 +1613,9 @@
           }
           if (imported.budgetLimits) {
             state.budgetLimits = imported.budgetLimits;
+          }
+          if (imported.totalSpendingLimit !== undefined) {
+            state.totalSpendingLimit = Number(imported.totalSpendingLimit) || 0;
           }
           if (imported.bankAccounts) {
             state.bankAccounts = imported.bankAccounts;
@@ -1930,6 +1968,7 @@
     // Data Action Items
     $('exportCsvBtn').addEventListener('click', exportCSV);
     $('exportJsonBtn').addEventListener('click', exportJSON);
+    $('saveGoogleDriveBtn').addEventListener('click', saveToGoogleDrive);
     
     $('importJsonInput').addEventListener('change', (e) => {
       if (e.target.files.length > 0) {
@@ -1950,6 +1989,7 @@
         state.categories = JSON.parse(JSON.stringify(DEFAULT_CATEGORIES));
         state.categoryIcons = { ...DEFAULT_CATEGORY_ICONS };
         state.budgetLimits = { ...DEFAULT_BUDGET_LIMITS };
+        state.totalSpendingLimit = 0;
         state.bankAccounts = [];
         saveState();
         renderPaymentMethodOptions();
@@ -1964,6 +2004,11 @@
     renderPaymentMethodOptions();
     bindEvents();
     renderApp();
+
+    const pageLoader = document.getElementById('pageLoader');
+    if (pageLoader) {
+      window.setTimeout(() => pageLoader.remove(), 1250);
+    }
   }
 
   // Run on DOM Ready
