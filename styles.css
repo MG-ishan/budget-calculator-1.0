@@ -1797,7 +1797,24 @@ body {
 }
 
 @media (max-width: 900px) {
+  .date-range-filter .range-label {
+    position: relative;
+  }
+
   .date-range-filter .range-label > span {
-    display: none !important;
+    display: block !important;
+    position: absolute;
+    z-index: 1;
+    top: 0.45rem;
+    left: 0.6rem;
+    color: var(--text-muted);
+    font-size: 0.75rem;
+    line-height: 1;
+    pointer-events: none;
+  }
+
+  .date-range-filter .date-input {
+    padding-top: 1.15rem;
+    padding-bottom: 0.2rem;
   }
 }
