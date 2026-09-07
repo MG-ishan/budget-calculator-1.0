@@ -226,7 +226,8 @@ body {
   border-radius: var(--radius-md);
   padding: 0.2rem 0.4rem;
   flex-wrap: nowrap;
-  min-width: 320px;
+  width: min(100%, 424px);
+  min-width: 0;
   min-height: 2.25rem;
 }
 
@@ -243,6 +244,7 @@ body {
 .date-input {
   width: 100%;
   min-width: 0;
+  max-width: 100%;
   border: 1px solid var(--border-color);
   background-color: var(--bg-card);
   color: var(--text-primary);
@@ -1621,7 +1623,6 @@ body {
 
   .date-range-filter {
     grid-area: dates;
-    min-width: 0;
     width: 100%;
   }
 
@@ -1659,7 +1660,6 @@ body {
   }
 
   .date-range-filter {
-    min-width: 0;
     width: 100%;
   }
 
