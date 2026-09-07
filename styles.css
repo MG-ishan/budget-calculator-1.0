@@ -1709,6 +1709,7 @@ body {
     grid-template-columns: 1fr 1fr;
     gap: 0.45rem;
     padding: 0.5rem;
+    overflow: hidden;
   }
 
   .date-range-filter .btn {
@@ -1720,10 +1721,17 @@ body {
     flex-direction: column;
     align-items: stretch;
     gap: 0.15rem;
+    min-width: 0;
+    width: 100%;
   }
 
   .date-input {
+    display: block;
     font-size: 0.75rem;
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+    padding-inline: 0.25rem;
   }
 
   .kpi-value {
@@ -1757,5 +1765,15 @@ body {
   .form-row {
     flex-direction: column;
     gap: 0;
+  }
+}
+
+@media (max-width: 430px) {
+  .date-range-filter {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .date-range-filter .btn {
+    grid-column: auto;
   }
 }
