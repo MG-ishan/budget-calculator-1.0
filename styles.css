@@ -224,7 +224,7 @@ body {
   background-color: var(--bg-app);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-md);
-  padding: 0.2rem 0.4rem;
+  padding: 0.35rem clamp(0.5rem, 2vw, 0.85rem);
   flex-wrap: nowrap;
   width: min(100%, 424px);
   min-width: 0;
@@ -1722,7 +1722,7 @@ body {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 0.45rem;
-    padding: 0.5rem;
+    padding: 0.5rem clamp(0.6rem, 3vw, 1rem);
     overflow: hidden;
   }
 
