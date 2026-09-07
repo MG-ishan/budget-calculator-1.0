@@ -1739,8 +1739,8 @@ body {
     width: 100%;
   }
 
-  .range-label > span {
-    display: none;
+  .date-range-filter .range-label > span {
+    display: none !important;
   }
 
   .date-input {
@@ -1793,5 +1793,11 @@ body {
 
   .date-range-filter .btn {
     grid-column: auto;
+  }
+}
+
+@media (max-width: 900px) {
+  .date-range-filter .range-label > span {
+    display: none !important;
   }
 }
