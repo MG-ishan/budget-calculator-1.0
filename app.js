@@ -54,59 +54,6 @@
     'Other Expense': 100
   };
 
-  const DEFAULT_BANK_ACCOUNTS = [
-    {
-      id: 'acct_cash',
-      type: 'cash',
-      name: 'Physical Cash',
-      institution: 'Cash On Hand',
-      holder: 'John Smith',
-      accountNumber: 'Cash',
-      balance: 520.00,
-      notes: 'Physical cash available'
-    },
-    {
-      id: 'acct_primary_checking',
-      type: 'bank',
-      name: 'Primary Checking',
-      institution: 'Chase',
-      holder: 'John Smith',
-      accountNumber: '9831',
-      balance: 6420.75,
-      notes: 'Main spending account'
-    },
-    {
-      id: 'acct_high_yield',
-      type: 'bank',
-      name: 'High Yield Savings',
-      institution: 'Ally',
-      holder: 'John Smith',
-      accountNumber: '5204',
-      balance: 18250.00,
-      notes: 'Emergency and savings reserve'
-    },
-    {
-      id: 'acct_fixed_deposit',
-      type: 'fixed_deposit',
-      name: 'FD 12-Month',
-      institution: 'HDFC',
-      holder: 'John Smith',
-      accountNumber: 'FD-2049',
-      balance: 25000.00,
-      notes: 'Locked deposit'
-    },
-    {
-      id: 'acct_travel_card',
-      type: 'web_card',
-      name: 'Travel Card',
-      institution: 'Visa',
-      holder: 'John Smith',
-      accountNumber: '4728',
-      balance: 420.00,
-      notes: 'Rewards and travel spending'
-    }
-  ];
-
   // State
   let state = {
     transactions: [],
@@ -114,7 +61,7 @@
     categoryIcons: { ...DEFAULT_CATEGORY_ICONS },
     budgetLimits: { ...DEFAULT_BUDGET_LIMITS },
     totalSpendingLimit: 0,
-    bankAccounts: JSON.parse(JSON.stringify(DEFAULT_BANK_ACCOUNTS)),
+    bankAccounts: [],
     selectedMonth: getCurrentYearMonth(),
     dateRangeStart: '',
     dateRangeEnd: '',
@@ -481,9 +428,6 @@
       const saved = localStorage.getItem('budget_inventory_data');
       if (saved) {
         const parsed = JSON.parse(saved);
-        const defaultAccountNames = new Set(DEFAULT_BANK_ACCOUNTS.map(account => account.name));
-        const defaultAccountIds = new Set(DEFAULT_BANK_ACCOUNTS.map(account => account.id));
-
         state.transactions = parsed.transactions || [];
         state.categories = parsed.categories || JSON.parse(JSON.stringify(DEFAULT_CATEGORIES));
         state.categoryIcons = parsed.categoryIcons || { ...DEFAULT_CATEGORY_ICONS };
@@ -492,145 +436,20 @@
         state.bankAccounts = Array.isArray(parsed.bankAccounts)
           ? parsed.bankAccounts.filter(account => {
               if (!account || typeof account !== 'object') return false;
-              return !defaultAccountIds.has(account.id) && !defaultAccountNames.has(account.name);
+              return true;
             })
           : [];
         state.theme = parsed.theme || 'light';
       } else {
-        loadSampleData(false);
+        state.transactions = [];
+        state.bankAccounts = [];
       }
     } catch (e) {
       console.error('Failed to load state', e);
-      loadSampleData(false);
+      state.transactions = [];
+      state.bankAccounts = [];
     }
     applyTheme(state.theme);
-  }
-
-  function loadSampleData(shouldSave = true) {
-    const currentYM = getCurrentYearMonth();
-    const [year, month] = currentYM.split('-');
-    
-    state.categories = JSON.parse(JSON.stringify(DEFAULT_CATEGORIES));
-    state.categoryIcons = { ...DEFAULT_CATEGORY_ICONS };
-    state.budgetLimits = { ...DEFAULT_BUDGET_LIMITS };
-    state.bankAccounts = JSON.parse(JSON.stringify(DEFAULT_BANK_ACCOUNTS));
-
-    state.transactions = [
-      {
-        id: generateUniqueId(),
-        type: 'income',
-        title: 'Monthly Salary',
-        amount: 4500.00,
-        category: 'Salary',
-        date: `${year}-${month}-01`,
-        method: 'Bank Transfer',
-        frequency: 'Monthly',
-        notes: 'Main employment direct deposit'
-      },
-      {
-        id: generateUniqueId(),
-        type: 'income',
-        title: 'Freelance Web Design Project',
-        amount: 850.00,
-        category: 'Freelance',
-        date: `${year}-${month}-12`,
-        method: 'PayPal',
-        frequency: 'One-time',
-        notes: 'Website UI redesign invoice #104'
-      },
-      {
-        id: generateUniqueId(),
-        type: 'income',
-        title: 'Stock Dividend Payment',
-        amount: 140.00,
-        category: 'Investments',
-        date: `${year}-${month}-15`,
-        method: 'Bank Transfer',
-        frequency: 'One-time',
-        notes: 'Quarterly payout'
-      },
-      {
-        id: generateUniqueId(),
-        type: 'expense',
-        title: 'Apartment Monthly Rent',
-        amount: 1450.00,
-        category: 'Housing/Rent',
-        date: `${year}-${month}-02`,
-        method: 'Bank Transfer',
-        frequency: 'Monthly',
-        notes: 'Lease unit #402'
-      },
-      {
-        id: generateUniqueId(),
-        type: 'expense',
-        title: 'Supermarket Grocery Shopping',
-        amount: 185.40,
-        category: 'Groceries',
-        date: `${year}-${month}-05`,
-        method: 'Credit Card',
-        frequency: 'One-time',
-        notes: 'Weekly pantry stock'
-      },
-      {
-        id: generateUniqueId(),
-        type: 'expense',
-        title: 'Electricity & Gas Bill',
-        amount: 135.20,
-        category: 'Utilities',
-        date: `${year}-${month}-08`,
-        method: 'Debit Card',
-        frequency: 'Monthly',
-        notes: 'City Utility Power Co.'
-      },
-      {
-        id: generateUniqueId(),
-        type: 'expense',
-        title: 'Weekend Dining with Friends',
-        amount: 92.50,
-        category: 'Dining Out',
-        date: `${year}-${month}-14`,
-        method: 'Credit Card',
-        frequency: 'One-time',
-        notes: 'Italian Bistro'
-      },
-      {
-        id: generateUniqueId(),
-        type: 'expense',
-        title: 'Gasoline & Parking',
-        amount: 65.00,
-        category: 'Transportation',
-        date: `${year}-${month}-18`,
-        method: 'Credit Card',
-        frequency: 'One-time',
-        notes: 'Fuel refill'
-      },
-      {
-        id: generateUniqueId(),
-        type: 'expense',
-        title: 'Netflix & Spotify Subscriptions',
-        amount: 28.98,
-        category: 'Subscriptions',
-        date: `${year}-${month}-20`,
-        method: 'Credit Card',
-        frequency: 'Monthly',
-        notes: 'Monthly digital services'
-      },
-      {
-        id: generateUniqueId(),
-        type: 'expense',
-        title: 'Mid-Month Grocery Shopping',
-        amount: 162.10,
-        category: 'Groceries',
-        date: `${year}-${month}-22`,
-        method: 'Credit Card',
-        frequency: 'One-time',
-        notes: 'Fresh produce & organic supplies'
-      }
-    ];
-
-    if (shouldSave) {
-      saveState();
-    }
   }
 
   // Theme Management
@@ -1973,13 +1792,6 @@
     $('importJsonInput').addEventListener('change', (e) => {
       if (e.target.files.length > 0) {
         importJSON(e.target.files[0]);
-      }
-    });
-
-    $('loadSampleBtn').addEventListener('click', () => {
-      if (confirm('Load sample data? This will reset categories and transactions to sample data.')) {
-        loadSampleData(true);
-        renderApp();
       }
     });
 
