@@ -864,6 +864,19 @@ body {
 }
 
 @media (max-width: 1024px) {
+  .header-container {
+    padding-inline: 1rem;
+  }
+
+  .header-actions {
+    flex-wrap: wrap;
+    justify-content: flex-end;
+  }
+
+  .date-range-filter {
+    min-width: 280px;
+  }
+
   .dashboard-layout {
     grid-template-columns: 1fr;
     grid-template-areas:
@@ -872,13 +885,64 @@ body {
   }
 
   .main-panel {
-    grid-template-columns: repeat(3, minmax(180px, 1fr));
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .expense-card {
+    grid-column: 1 / -1;
+  }
+
+  .table-toolbar {
+    flex-wrap: wrap;
+  }
+
+  .search-box {
+    min-width: min(100%, 240px);
   }
 }
 
 @media (max-width: 700px) {
+  .main-container {
+    margin-top: 0.85rem;
+    padding-inline: 0.75rem;
+  }
+
   .main-panel {
     grid-template-columns: 1fr;
+  }
+
+  .expense-card {
+    grid-column: auto;
+  }
+
+  .side-panel > .card,
+  .side-panel > .kpi-card {
+    margin-bottom: 0.85rem;
+  }
+
+  .card,
+  .kpi-card {
+    padding: 1rem;
+    border-radius: var(--radius-md);
+  }
+
+  .chart-wrapper {
+    height: 210px;
+  }
+
+  .table-toolbar {
+    align-items: stretch;
+    gap: 0.65rem;
+  }
+
+  .search-box,
+  .filters-group,
+  .filters-group .form-control {
+    width: 100%;
+  }
+
+  .filters-group {
+    flex-direction: column;
   }
 }
 
@@ -1533,10 +1597,50 @@ body {
 }
 
 /* Responsive adjustments */
+@media (min-width: 641px) and (max-width: 812px) {
+  .header-container {
+    padding: 0.6rem 1rem;
+  }
+
+  .header-actions {
+    width: 100%;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr);
+    grid-template-areas:
+      "month dates"
+      "actions actions";
+    align-items: stretch;
+    gap: 0.5rem;
+  }
+
+  .month-nav {
+    grid-area: month;
+    min-width: 0;
+    justify-content: space-between;
+  }
+
+  .date-range-filter {
+    grid-area: dates;
+    min-width: 0;
+    width: 100%;
+  }
+
+  .action-buttons {
+    grid-area: actions;
+    width: 100%;
+    justify-content: flex-start;
+  }
+}
+
 @media (max-width: 640px) {
+  body {
+    padding-bottom: 1rem;
+  }
+
   .header-container {
     flex-direction: column;
     align-items: stretch;
+    padding: 0.6rem 0.75rem;
   }
 
   .header-actions {
@@ -1546,6 +1650,12 @@ body {
 
   .month-nav {
     justify-content: space-between;
+    width: 100%;
+  }
+
+  .month-input {
+    flex: 1;
+    text-align: center;
   }
 
   .date-range-filter {
@@ -1554,7 +1664,75 @@ body {
   }
 
   .action-buttons {
-    justify-content: space-between;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.5rem;
+  }
+
+  .action-buttons > .btn,
+  .action-buttons > .dropdown,
+  .action-buttons > .dropdown .btn {
+    width: 100%;
+  }
+
+  .action-buttons > .dropdown {
+    min-width: 0;
+  }
+
+  .action-buttons > .dropdown .dropdown-menu {
+    left: 0;
+    right: auto;
+    width: min(260px, calc(100vw - 1.5rem));
+  }
+
+  .date-range-filter {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.45rem;
+    padding: 0.5rem;
+  }
+
+  .date-range-filter .btn {
+    grid-column: 1 / -1;
+    width: 100%;
+  }
+
+  .range-label {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.15rem;
+  }
+
+  .date-input {
+    font-size: 0.75rem;
+  }
+
+  .kpi-value {
+    font-size: 1.55rem;
+  }
+
+  .expense-card .kpi-value,
+  .balance-card .kpi-value,
+  .savings-card .kpi-value {
+    font-size: 1.3rem;
+  }
+
+  .inventory-card-compact {
+    min-height: 360px;
+  }
+
+  .table-responsive {
+    min-height: 280px;
+  }
+
+  .data-table {
+    min-width: 720px;
+    font-size: 0.8rem;
+  }
+
+  .data-table th,
+  .data-table td {
+    padding: 0.65rem 0.75rem;
   }
 
   .form-row {
